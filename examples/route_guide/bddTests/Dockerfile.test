@@ -1,0 +1,22 @@
+FROM photon:3.0
+
+# Install go, mostly per instructions at https://golang.org/doc/install
+# GOPATH was set because root is being used, not a user.
+# CGO_ENABLED=0 needed to indicate gcc will not be used for tests.
+RUN tdnf -y install git wget tar gzip && \
+    wget https://dl.google.com/go/go1.14.1.linux-amd64.tar.gz && \
+    tar -C /usr/local/ -xzf go1.14.1.linux-amd64.tar.gz
+ENV PATH=${PATH}:/usr/local/go/bin:/go/bin GOPATH=/go CGO_ENABLED=0
+
+# Install gRPC per https://grpc.io/docs/tutorials/basic/go/
+# Install ginkgo and gomega per https://onsi.github.io/ginkgo/
+RUN go get google.golang.org/grpc && \
+    go get github.com/onsi/ginkgo/ginkgo && \
+    go get github.com/onsi/gomega/...
+
+# Copy over tests into GOPATH
+WORKDIR /go/src/github.com/grpc/grpc-go/examples/route_guide
+COPY . .
+
+WORKDIR /go/src/github.com/grpc/grpc-go/examples/route_guide/bddTests
+ENTRYPOINT [ "ginkgo", "-v"]

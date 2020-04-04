@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  rg-server:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    image: fgold/photon-rg:0.1
+  rg-bdd:
+    build:
+      context: .
+      dockerfile: ./bddTests/Dockerfile.test
+    image: fgold/photon-go:0.1
+    network_mode:
+      service:rg-server
