@@ -12,21 +12,22 @@ import (
 
 var _ = Describe("Route Guide Client", func() {
 	var _ = Describe("Get feature(s)", func() {
-		Context("At one location", func() {
-			It("should return a feature name", func() {
-				point := &pb.Point{Latitude: 409146138, Longitude: -746188906}
-				feature, err := clt.GetFeature(ctx, point)
-				Expect(err).NotTo(HaveOccurred())
+		Context("At one location that has a feature", func() {
+			point := &pb.Point{Latitude: 409146138, Longitude: -746188906}
 
+			It("should return a feature name", func() {
+				feature, err := clt.GetFeature(ctx, point)
 				Expect(feature.Name).To(Equal("Berkshire Valley Management Area Trail, Jefferson, NJ, USA"))
 				Expect(feature.Location.Latitude).To(Equal(point.Latitude))
 				Expect(feature.Location.Longitude).To(Equal(point.Longitude))
+				Expect(err).NotTo(HaveOccurred())
 			})
 		})
 
 		Context("At one location with feature missing", func() {
-			It("should return a feature name", func() {
-				point := &pb.Point{Latitude: 0, Longitude: 0}
+			point := &pb.Point{Latitude: 0, Longitude: 0}
+
+			It("should return an empty string", func() {
 				feature, err := clt.GetFeature(ctx, point)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -36,13 +37,13 @@ var _ = Describe("Route Guide Client", func() {
 			})
 		})
 
-		Context("Inside a rectangular area", func() {
-			It("should return features inside the area", func() {
-				rect := &pb.Rectangle{
-					Hi: &pb.Point{Latitude: 420000000, Longitude: -746000000},
-					Lo: &pb.Point{Latitude: 400000000, Longitude: -746500000},
-				}
+		Context("When requesting features for a given rectangular area", func() {
+			rect := &pb.Rectangle{
+				Hi: &pb.Point{Latitude: 420000000, Longitude: -746000000},
+				Lo: &pb.Point{Latitude: 400000000, Longitude: -746500000},
+			}
 
+			It("should return features inside the area", func() {
 				stream, err := clt.ListFeatures(ctx, rect)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -51,7 +52,6 @@ var _ = Describe("Route Guide Client", func() {
 					if err == io.EOF {
 						break
 					}
-
 					Expect(err).NotTo(HaveOccurred())
 
 					// Convert to a valid map key
@@ -67,10 +67,10 @@ var _ = Describe("Route Guide Client", func() {
 	})
 
 	var _ = Describe("Record route", func() {
-		Context("With multiple locations", func() {
-			It("should return a route summary", func() {
-				points := getRoute()
+		Context("When multiple locations are sent", func() {
+			points := getRoute()
 
+			It("should return a route summary", func() {
 				stream, err := clt.RecordRoute(ctx)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -89,13 +89,13 @@ var _ = Describe("Route Guide Client", func() {
 		})
 	})
 
-	var _ = Describe("Test the Route Chat feature", func() {
-		Context("A client sends and receives notes", func() {
-			It("should recieve notes while they are being sent", func() {
+	var _ = Describe("Route Chat feature", func() {
+		Context("When a client sends notes for a location", func() {
+			notesToSend := getNotes()
+		
+			It("should recieve all other notes sent for that location", func() {
 				wg := sync.WaitGroup{}
 				wg.Add(2)
-
-				notesToSend := getNotes()
 
 				// Messages received will be stored in a map.
 				got := map[string]int{}
