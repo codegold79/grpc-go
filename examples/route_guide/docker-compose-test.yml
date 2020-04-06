@@ -1,13 +1,13 @@
 version: "3.7"
 services:
-  rg-server:
+  route-server:
     build:
       context: .
       dockerfile: ./server/Dockerfile
-    image: fgold/rg-server:0.1
-  rg-bdd:
+    image: fgold/route-server:0.1
+  route-client-bdd:
     build:
       context: .
       dockerfile: ./bddTests/Dockerfile.test
-    image: fgold/golang-rg-tests:0.1
-    network_mode: service:rg-server
+    image: fgold/route-client-bdd:0.1
+    network_mode: service:route-server
