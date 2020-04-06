@@ -1,41 +1,16 @@
 package bddTests
 
 import (
-	"context"
 	"io"
 	"sync"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"google.golang.org/grpc"
 	pb "google.golang.org/grpc/examples/route_guide/routeguide"
 )
 
 var _ = Describe("Route Guide Client", func() {
-	var (
-		clt    pb.RouteGuideClient
-		ctx    context.Context
-		cancel context.CancelFunc
-		conn   *grpc.ClientConn
-		err    error
-	)
-
-	BeforeEach(func() {
-		conn, err = grpc.Dial("localhost:10000", grpc.WithInsecure(), grpc.WithBlock())
-		Expect(err).NotTo(HaveOccurred())
-
-		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-
-		clt = pb.NewRouteGuideClient(conn)
-	})
-
-	AfterEach(func() {
-		conn.Close()
-		cancel()
-	})
-
 	var _ = Describe("Get feature(s)", func() {
 		Context("At one location", func() {
 			It("should return a feature name", func() {
