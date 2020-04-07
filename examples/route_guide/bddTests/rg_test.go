@@ -11,56 +11,89 @@ import (
 
 var _ = Describe("Route Guide Client", func() {
 	var _ = Describe("Get feature(s)", func() {
-		Context("At one location that has a feature", func() {
-			point := &pb.Point{Latitude: 409146138, Longitude: -746188906}
+		Context("given a location", func() {
+			var (
+				feature *pb.Feature
+				err     error
+				point   *pb.Point
+			)
 
-			It("should return a feature name", func() {
-				feature, err := clt.GetFeature(ctx, point)
-				Expect(feature.Name).To(Equal("Berkshire Valley Management Area Trail, Jefferson, NJ, USA"))
-				Expect(feature.Location.Latitude).To(Equal(point.Latitude))
-				Expect(feature.Location.Longitude).To(Equal(point.Longitude))
-				Expect(err).NotTo(HaveOccurred())
-			})
-		})
+			When("providing a location with a feature", func() {
+				BeforeEach(func() {
+					point = &pb.Point{Latitude: 409146138, Longitude: -746188906}
+					feature, err = clt.GetFeature(ctx, point)
+				})
 
-		Context("At one location with feature missing", func() {
-			point := &pb.Point{Latitude: 0, Longitude: 0}
+				It("should return a feature name", func() {
+					Expect(feature.Name).To(Equal("Berkshire Valley Management Area Trail, Jefferson, NJ, USA"))
+					Expect(feature.Location.Latitude).To(Equal(point.Latitude))
+					Expect(feature.Location.Longitude).To(Equal(point.Longitude))
+				})
 
-			It("should return an empty string", func() {
-				feature, err := clt.GetFeature(ctx, point)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(feature.Name).To(Equal(""))
-				Expect(feature.Location.Latitude).To(Equal(point.Latitude))
-				Expect(feature.Location.Longitude).To(Equal(point.Longitude))
-			})
-		})
-
-		Context("When requesting features for a given rectangular area", func() {
-			rect := &pb.Rectangle{
-				Hi: &pb.Point{Latitude: 420000000, Longitude: -746000000},
-				Lo: &pb.Point{Latitude: 400000000, Longitude: -746500000},
-			}
-
-			It("should return features inside the area", func() {
-				stream, err := clt.ListFeatures(ctx, rect)
-				Expect(err).NotTo(HaveOccurred())
-
-				for {
-					feature, err := stream.Recv()
-					if err == io.EOF {
-						break
-					}
+				It("should not error", func() {
 					Expect(err).NotTo(HaveOccurred())
+				})
+			})
 
-					// Convert to a valid map key
-					location := point{
-						latitude:  feature.Location.Latitude,
-						longitude: feature.Location.Longitude,
+			When("providing a location without a feature", func() {
+				BeforeEach(func() {
+					point = &pb.Point{Latitude: 0, Longitude: 0}
+					feature, err = clt.GetFeature(ctx, point)
+				})
+
+				It("should return an empty string", func() {
+					Expect(feature.Name).To(Equal(""))
+					Expect(feature.Location.Latitude).To(Equal(point.Latitude))
+					Expect(feature.Location.Longitude).To(Equal(point.Longitude))
+				})
+
+				It("should not error", func() {
+					Expect(err).NotTo(HaveOccurred())
+				})
+			})
+		})
+
+		Context("given a rectangular area", func() {
+			When("stream from server has been established", func() {
+				var (
+					feature *pb.Feature
+					err     error
+					rect    *pb.Rectangle
+					stream  pb.RouteGuide_ListFeaturesClient
+					want    map[point]string
+				)
+
+				BeforeEach(func() {
+					rect = &pb.Rectangle{
+						Hi: &pb.Point{Latitude: 420000000, Longitude: -746000000},
+						Lo: &pb.Point{Latitude: 400000000, Longitude: -746500000},
 					}
-					featureList := getExpectedFeatureList()
-					Expect(feature.Name).To(Equal(featureList[location]))
-				}
+					stream, err = clt.ListFeatures(ctx, rect)
+
+					want = getExpectedFeatureList()
+				})
+
+				It("should not error", func() {
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				It("should return (empty) features inside the area", func() {
+					for {
+						feature, err = stream.Recv()
+						if err == io.EOF {
+							break
+						}
+
+						// Convert receieved feature location to a valid map key
+						// for equality comparison.
+						location := point{
+							latitude:  feature.Location.Latitude,
+							longitude: feature.Location.Longitude,
+						}
+
+						Expect(feature.Name).To(Equal(want[location]))
+					}
+				})
 			})
 		})
 	})
