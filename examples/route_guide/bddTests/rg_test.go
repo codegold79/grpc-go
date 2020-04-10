@@ -18,7 +18,11 @@ var _ = Describe("Route Guide Client", func() {
 				point   *pb.Point
 			)
 
-			When("providing a location with a feature", func() {
+			// Describe, Context, and When are functionally equivalent,
+			// but provide semantic nuance.
+			When("providing an location with a feature", func() {
+				// BeforeEach runs before every spec, i.e. It(),
+				// within this When() scope.
 				BeforeEach(func() {
 					point = &pb.Point{Latitude: 409146138, Longitude: -746188906}
 					feature, err = clt.GetFeature(ctx, point)
@@ -84,7 +88,7 @@ var _ = Describe("Route Guide Client", func() {
 							break
 						}
 
-						// Convert receieved feature location to a valid map key
+						// Convert received feature location to a valid map key
 						// for equality comparison.
 						location := point{
 							latitude:  feature.Location.Latitude,
@@ -227,6 +231,8 @@ type point struct {
 	longitude int32
 }
 
+// Declutter the body of the tests by returning large amounts of
+// expected data from outside.
 func getExpectedFeatureList() map[point]string {
 	return map[point]string{
 		point{latitude: 407838351, longitude: -746143763}: "Patriots Path, Mendham, NJ 07945, USA",
