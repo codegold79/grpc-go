@@ -55,6 +55,18 @@ var _ = Describe("Route Guide Client", func() {
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
+
+			When("providing invalid coordinate(s)", func() {
+				BeforeEach(func() {
+					point = &pb.Point{Latitude: -910000000, Longitude: 810000000}
+					feature, err = clt.GetFeature(ctx, point)
+				})
+
+				It("should return an invalid coordinate error", func() {
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("coordinate(s) out of range"))
+				})
+			})
 		})
 
 		Context("given a rectangular area", func() {
