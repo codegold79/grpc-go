@@ -39,7 +39,9 @@ import (
 
 	"google.golang.org/grpc"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/testdata"
 
 	"github.com/golang/protobuf/proto"
@@ -65,6 +67,11 @@ type routeGuideServer struct {
 
 // GetFeature returns the feature at the given point.
 func (s *routeGuideServer) GetFeature(ctx context.Context, point *pb.Point) (*pb.Feature, error) {
+	err := validatePoint(point)
+	if err != nil {
+		return nil, err
+	}
+
 	for _, feature := range s.savedFeatures {
 		if proto.Equal(feature.Location, point) {
 			return feature, nil
@@ -83,6 +90,19 @@ func (s *routeGuideServer) ListFeatures(rect *pb.Rectangle, stream pb.RouteGuide
 			}
 		}
 	}
+	return nil
+}
+
+func validatePoint(point *pb.Point) error {
+	if point.Latitude < -900000000 || point.Latitude > 900000000 {
+		return status.Errorf(codes.InvalidArgument,
+			"coordinate(s) out of xrange")
+	}
+	if point.Longitude < -1800000000 || point.Longitude > 800000000 {
+		return status.Errorf(codes.InvalidArgument,
+			"coordinate(s) out of xrange")
+	}
+
 	return nil
 }
 
