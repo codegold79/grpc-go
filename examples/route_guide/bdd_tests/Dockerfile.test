@@ -10,5 +10,5 @@ RUN go get google.golang.org/grpc && \
 WORKDIR /go/src/github.com/grpc/grpc-go/examples/route_guide
 COPY . .
 
-WORKDIR /go/src/github.com/grpc/grpc-go/examples/route_guide/bddTests
-ENTRYPOINT [ "ginkgo", "-v"]
+WORKDIR /go/src/github.com/grpc/grpc-go/examples/route_guide/bdd_tests
+ENTRYPOINT ["ginkgo", "-v"]

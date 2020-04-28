@@ -1,4 +1,4 @@
-package bddTests
+package bdd_tests
 
 import (
 	"context"
@@ -35,6 +35,6 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	conn.Close()
 	cancel()
+	conn.Close()
 })

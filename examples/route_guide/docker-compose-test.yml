@@ -4,10 +4,10 @@ services:
     build:
       context: .
       dockerfile: ./server/Dockerfile
-    image: fgold/route-server:0.1
+    image: route-server:0.1
   route-client-bdd:
     build:
       context: .
-      dockerfile: ./bddTests/Dockerfile.test
-    image: fgold/route-client-bdd:0.1
+      dockerfile: ./bdd_tests/Dockerfile.test
+    image: route-client-bdd:0.1
     network_mode: service:route-server

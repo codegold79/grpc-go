@@ -37,14 +37,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/testdata"
-
-	"github.com/golang/protobuf/proto"
 
 	pb "google.golang.org/grpc/examples/route_guide/routeguide"
 )
@@ -93,14 +91,15 @@ func (s *routeGuideServer) ListFeatures(rect *pb.Rectangle, stream pb.RouteGuide
 	return nil
 }
 
+// validatePoint was added to pass the latest test spec.
 func validatePoint(point *pb.Point) error {
 	if point.Latitude < -900000000 || point.Latitude > 900000000 {
 		return status.Errorf(codes.InvalidArgument,
-			"coordinate(s) out of xrange")
+			"coordinate(s) out of range")
 	}
 	if point.Longitude < -1800000000 || point.Longitude > 800000000 {
 		return status.Errorf(codes.InvalidArgument,
-			"coordinate(s) out of xrange")
+			"coordinate(s) out of range")
 	}
 
 	return nil

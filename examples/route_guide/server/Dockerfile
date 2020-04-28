@@ -14,4 +14,4 @@ FROM photon:3.0
 WORKDIR /go/src/github.com/grpc/grpc-go/examples/route_guide/server
 COPY --from=builder /go/src/github.com/grpc/grpc-go/examples/route_guide/server .
 
-ENTRYPOINT [ "./server"]
+ENTRYPOINT ["./server"]
